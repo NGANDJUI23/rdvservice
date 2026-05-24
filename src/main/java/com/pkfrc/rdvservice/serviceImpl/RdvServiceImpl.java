@@ -89,26 +89,7 @@ public class RdvServiceImpl {
 
         log.debug("Nouveau RDV: début={}, fin={}", newStart, newEnd);
 
-//        // 5. Vérifier les conflits avec les rendez-vous existants du client
-//        List<RendezVous> clientAppointments = rendezVousRepository.findActiveAppointmentsByClient(request.refClient());
-//
-//        // Chercher un rendez-vous qui chevauche
-//        for (RendezVous existing : clientAppointments) {
-//            LocalDateTime existingStart = existing.getDateRdv();
-//            LocalDateTime existingEnd = existingStart.plusHours(1);
-//
-//            // Vérifier si les plages se chevauchent
-//            boolean hasOverlap = newStart.isBefore(existingEnd) && existingStart.isBefore(newEnd);
-//
-//            if (hasOverlap) {
-//                throw new BusinessException("CONFLIT_HORAIRE_CLIENT",
-//                        String.format("Impossible de créer le rendez-vous. Vous avez déjà un rendez-vous le %s de %s à %s (service: %s)",
-//                                existingStart.toLocalDate(),
-//                                existingStart.toLocalTime(),
-//                                existingEnd.toLocalTime(),
-//                                existing.getService().getNom()));
-//            }
-//        }
+
         // 5. VÉRIFICATION 1: Le client a-t-il déjà un rendez-vous qui chevauche cette plage ?
         List<RendezVous> clientAppointments = rendezVousRepository.findActiveAppointmentsByClient(request.refClient());
 
@@ -172,8 +153,8 @@ public class RdvServiceImpl {
         }
 
         // Contrôle de concurrence: Vérifier si le créneau est déjà pris
-        Optional<RendezVous> existingRendezVous = rendezVousRepository.findByServiceIdAndDateRdvWithLock(
-                request.refService(), request.dateRDV());
+        Optional<RendezVous> existingRendezVous = rendezVousRepository.findByServiceIdAndDateRdvWithLockAndClientIdAndResponsableId(
+                request.refService(), request.dateRDV(), request.refClient(), request.refResponsable());
 
         if (existingRendezVous.isPresent()) {
             log.warn("Créneau horaire déjà occupé pour le service ID {} à {}",
@@ -184,7 +165,7 @@ public class RdvServiceImpl {
         }
 
         // Double vérification
-        if (rendezVousRepository.isTimeSlotTaken(request.refService(), request.dateRDV())) {
+        if (rendezVousRepository.isTimeSlotTaken(request.refService(), request.dateRDV(), request.refResponsable(), request.refClient())) {
             throw new BusinessException("CRENEAU_INDISPONIBLE",
                     "Le créneau horaire est déjà pris");
         }

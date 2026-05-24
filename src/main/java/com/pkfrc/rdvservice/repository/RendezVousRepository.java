@@ -22,14 +22,20 @@ public interface RendezVousRepository extends JpaRepository<RendezVous, Long> {
      * @return Optional du rendez-vous trouvé
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT r FROM RendezVous r WHERE r.service.id = :serviceId AND r.dateRdv = :dateTime AND r.isDeleted = false")
-    Optional<RendezVous> findByServiceIdAndDateRdvWithLock(
+    @Query("SELECT r FROM RendezVous r WHERE r.service.id = :serviceId AND r.dateRdv = :dateTime AND r.responsable.id = :responsableId AND r.client.id = :clientId AND r.isDeleted = false")
+    Optional<RendezVous> findByServiceIdAndDateRdvWithLockAndClientIdAndResponsableId(
             @Param("serviceId") Long serviceId,
-            @Param("dateTime") LocalDateTime dateTime
+            @Param("dateTime") LocalDateTime dateTime,
+            @Param("responsableId") Long responsableId,
+            @Param("clientId") Long clientId
     );
 
-    @Query("SELECT COUNT(r) > 0 FROM RendezVous r WHERE r.service.id = :serviceId AND r.dateRdv = :dateTime AND r.isDeleted = false")
-    boolean isTimeSlotTaken(@Param("serviceId") Long serviceId, @Param("dateTime") LocalDateTime dateTime);
+    @Query("SELECT COUNT(r) > 0 FROM RendezVous r WHERE r.service.id = :serviceId AND r.dateRdv = :dateTime AND r.responsable.id = :responsableId AND r.client.id = :clientId AND r.isDeleted = false")
+    boolean isTimeSlotTaken(
+            @Param("serviceId") Long serviceId,
+            @Param("dateTime") LocalDateTime dateTime,
+            @Param("responsableId") Long responsableId,
+            @Param("clientId") Long clientId);
 
     @Query("SELECT r FROM RendezVous r WHERE r.responsable.id = :responsableId AND r.isDeleted = false")
     List<RendezVous> findByResponsableId(@Param("responsableId") Long responsableId);
