@@ -133,6 +133,12 @@
                                     <artifactId>lombok</artifactId>
                                 </path>
                             </annotationProcessorPaths>
+                            <excludes>
+                                <!-- Exclure la classe de test principale -->
+                                <exclude>**/RdvserviceApplicationTests.java</exclude>
+                                <!-- Exclure toutes les classes qui contiennent "ApplicationTests" -->
+                                <exclude>**/*ApplicationTests.java</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
                     <execution>
