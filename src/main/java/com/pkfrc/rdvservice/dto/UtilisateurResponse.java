@@ -2,7 +2,7 @@ package com.pkfrc.rdvservice.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.pkfrc.rdvservice.entity.Role;
+import com.pkfrc.rdvservice.enumeration.Role;
 
 import java.time.LocalDate;
 

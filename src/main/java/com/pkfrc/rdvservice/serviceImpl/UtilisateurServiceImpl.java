@@ -2,7 +2,7 @@ package com.pkfrc.rdvservice.serviceImpl;
 
 import com.pkfrc.rdvservice.dto.UtilisateurRequest;
 import com.pkfrc.rdvservice.dto.UtilisateurResponse;
-import com.pkfrc.rdvservice.entity.Role;
+import com.pkfrc.rdvservice.enumeration.Role;
 import com.pkfrc.rdvservice.entity.Utilisateur;
 import com.pkfrc.rdvservice.exception.BusinessException;
 import com.pkfrc.rdvservice.exception.ResourceNotFoundException;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

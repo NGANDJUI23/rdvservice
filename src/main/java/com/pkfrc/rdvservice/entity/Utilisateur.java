@@ -1,5 +1,6 @@
 package com.pkfrc.rdvservice.entity;
 
+import com.pkfrc.rdvservice.enumeration.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;

@@ -2,7 +2,7 @@ package com.pkfrc.rdvservice.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.pkfrc.rdvservice.entity.NomService;
+import com.pkfrc.rdvservice.enumeration.NomService;
 import jakarta.validation.constraints.*;
 
 public record ServiceRequest(
