@@ -1,16 +1,12 @@
 package com.pkfrc.rdvservice.repository;
 
-import com.pkfrc.rdvservice.entity.RendezVous;
-import com.pkfrc.rdvservice.entity.Role;
+import com.pkfrc.rdvservice.enumeration.Role;
 import com.pkfrc.rdvservice.entity.Utilisateur;
-import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 

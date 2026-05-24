@@ -2,7 +2,7 @@ package com.pkfrc.rdvservice.api;
 
 import com.pkfrc.rdvservice.dto.UtilisateurRequest;
 import com.pkfrc.rdvservice.dto.UtilisateurResponse;
-import com.pkfrc.rdvservice.entity.Role;
+import com.pkfrc.rdvservice.enumeration.Role;
 import com.pkfrc.rdvservice.serviceImpl.UtilisateurServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
