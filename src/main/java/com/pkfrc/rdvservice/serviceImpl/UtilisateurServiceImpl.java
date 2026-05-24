@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -68,7 +69,8 @@ public class UtilisateurServiceImpl {
     public UtilisateurResponse getUtilisateurById(Long id) {
         log.debug("Recherche de l'utilisateur avec ID: {}", id);
 
-        Utilisateur utilisateur = utilisateurRepository.findByIdAndIsDeletedFalse(id)
+        Optional<Utilisateur> utilisateurOptional = utilisateurRepository.findByIdAndIsDeletedFalse(id);
+        Utilisateur utilisateur = utilisateurOptional
 //                .map(this::mapToResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "id", id));
 
@@ -261,8 +263,9 @@ public class UtilisateurServiceImpl {
                     "L'email ne peut pas être vide");
         }
 
-        Utilisateur utilisateur = utilisateurRepository.findByEmailAndIsDeletedFalse(email).get();
-//                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "email", email));
+        Optional<Utilisateur> utilisateurOptional = utilisateurRepository.findByEmailAndIsDeletedFalse(email);
+        Utilisateur utilisateur = utilisateurOptional
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "email", email));
 
         log.debug("Utilisateur trouvé: {} - {}", utilisateur.getUsername(), utilisateur.getEmail());
 
