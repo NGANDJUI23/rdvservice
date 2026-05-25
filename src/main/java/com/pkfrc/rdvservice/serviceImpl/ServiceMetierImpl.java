@@ -27,7 +27,6 @@ public class ServiceMetierImpl implements ServiceMetierFace {
     /**
      * Créer un nouveau service
      */
-    @Transactional(readOnly = true)
     @Override
     public ServiceResponse creerService(ServiceRequest request) {
         log.debug("Création du service : {}", request.nom());
