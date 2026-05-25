@@ -7,6 +7,7 @@ import com.pkfrc.rdvservice.entity.Utilisateur;
 import com.pkfrc.rdvservice.exception.BusinessException;
 import com.pkfrc.rdvservice.exception.ResourceNotFoundException;
 import com.pkfrc.rdvservice.repository.UtilisateurRepository;
+import com.pkfrc.rdvservice.serviceFace.UtilisateurServiceFace;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 //import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UtilisateurServiceImpl {
+public class UtilisateurServiceImpl implements UtilisateurServiceFace {
 
     @Autowired
     UtilisateurRepository utilisateurRepository;
@@ -66,6 +67,7 @@ public class UtilisateurServiceImpl {
     }
 
     @Transactional(readOnly = true)
+    @Override
     public UtilisateurResponse getUtilisateurById(Long id) {
         log.debug("Recherche de l'utilisateur avec ID: {}", id);
 
@@ -80,6 +82,7 @@ public class UtilisateurServiceImpl {
      * Récupérer tous les utilisateurs (non supprimés)
      */
     @Transactional(readOnly = true)
+    @Override
     public List<UtilisateurResponse> getAllUtilisateurs() {
         log.debug("Récupération de tous les utilisateurs non supprimés");
 
@@ -93,6 +96,7 @@ public class UtilisateurServiceImpl {
      * Récupérer tous les utilisateurs (y compris supprimés)
      */
     @Transactional(readOnly = true)
+    @Override
     public List<UtilisateurResponse> getAllUtilisateursIncludingDeleted() {
         log.debug("Récupération de tous les utilisateurs (y compris supprimés)");
 
@@ -105,6 +109,7 @@ public class UtilisateurServiceImpl {
 
 
     @Transactional
+    @Override
     public void supprimerUtilisateur(Long id) {
         log.debug("Suppression soft de l'utilisateur ID: {}", id);
 
@@ -131,6 +136,7 @@ public class UtilisateurServiceImpl {
     }
 
     @Transactional
+    @Override
     public UtilisateurResponse updateUtilisateur(Long id, UtilisateurRequest request) {
         log.debug("Mise à jour de l'utilisateur avec ID: {}", id);
 
@@ -188,6 +194,7 @@ public class UtilisateurServiceImpl {
      * @return Liste des utilisateurs ayant ce rôle
      */
     @Transactional(readOnly = true)
+    @Override
     public List<UtilisateurResponse> getUtilisateursByRole(Role role) {
         log.debug("Recherche des utilisateurs par rôle: {}", role);
 
@@ -215,6 +222,7 @@ public class UtilisateurServiceImpl {
      * @return Liste des utilisateurs ayant ce rôle
      */
     @Transactional(readOnly = true)
+    @Override
     public List<UtilisateurResponse> getUtilisateursByRoleIgnoreCase(Role role) {
         log.debug("Recherche des utilisateurs par rôle (ignore case): {}", role);
 
@@ -231,6 +239,7 @@ public class UtilisateurServiceImpl {
      * @return Nombre d'utilisateurs ayant ce rôle
      */
     @Transactional(readOnly = true)
+    @Override
     public long countUtilisateursByRole(Role role) {
         log.debug("Comptage des utilisateurs par rôle: {}", role);
 
@@ -243,6 +252,7 @@ public class UtilisateurServiceImpl {
      * @return true si au moins un utilisateur existe avec ce rôle
      */
     @Transactional(readOnly = true)
+    @Override
     public boolean hasUtilisateursWithRole(Role role) {
         log.debug("Vérification de l'existence d'utilisateurs avec le rôle: {}", role);
 
@@ -255,6 +265,7 @@ public class UtilisateurServiceImpl {
      * @return L'utilisateur trouvé
      */
     @Transactional(readOnly = true)
+    @Override
     public UtilisateurResponse getUtilisateurByEmail(String email) {
         log.debug("Recherche de l'utilisateur par email: {}", email);
 
@@ -278,6 +289,7 @@ public class UtilisateurServiceImpl {
      * @return L'utilisateur trouvé
      */
     @Transactional(readOnly = true)
+    @Override
     public UtilisateurResponse getUtilisateurByUsername(String username) {
         log.debug("Recherche de l'utilisateur par username: {}", username);
 

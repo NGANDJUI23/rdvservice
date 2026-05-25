@@ -13,32 +13,25 @@ import java.util.Optional;
 @Repository
 public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> {
     Optional<Utilisateur> findByIdAndIsDeletedFalse(Long id);
+
     Boolean existsByUsernameAndIsDeletedFalse(String username);
+
     Boolean existsByEmailAndIsDeletedFalse(String email);
+
     Boolean existsByTelephoneAndIsDeletedFalse(String Telephone);
-    // Méthode 1: Avec @Query explicite
+
     @Query("SELECT u FROM Utilisateur u WHERE u.role = :role AND u.isDeleted = false")
     List<Utilisateur> findByRoleAndIsDeletedFalse(@Param("role") Role role);
 
-    // Méthode 2: Avec nommage conventionnel (Spring Data JPA va l'interpréter automatiquement)
-    // List<Utilisateur> findByRoleAndIsDeletedFalse(Role role);
-
     @Query("SELECT u FROM Utilisateur u WHERE u.isDeleted = false")
     List<Utilisateur> findAllIsDeletedFalse();
-    // Recherche active par ID avec Query explicite
+
     @Query("SELECT u FROM Utilisateur u WHERE u.id = :id AND u.isDeleted = false")
     Optional<Utilisateur> findActiveById(@Param("id") Long id);
 
     // Récupérer tous les utilisateurs actifs
     @Query("SELECT u FROM Utilisateur u WHERE u.isDeleted = false")
     List<Utilisateur> findAllActive();
-
-    // Méthode 1: Avec @Query explicite
-//    @Query("SELECT u FROM Utilisateur u WHERE u.role = :role AND u.isDeleted = false")
-//    List<Utilisateur> findByRoleAndIsDeletedFalse(@Param("role") Role role);
-
-    // Méthode 2: Avec nommage conventionnel (Spring Data JPA va l'interpréter automatiquement)
-    // List<Utilisateur> findByRoleAndIsDeletedFalse(Role role);
 
     // Recherche par rôle en ignorant la casse
     @Query("SELECT u FROM Utilisateur u WHERE LOWER(u.role) = LOWER(:role) AND u.isDeleted = false")

@@ -6,6 +6,7 @@ import com.pkfrc.rdvservice.dto.ServiceResponse;
 import com.pkfrc.rdvservice.entity.Services;
 import com.pkfrc.rdvservice.exception.BusinessException;
 import com.pkfrc.rdvservice.repository.ServiceRepository;
+import com.pkfrc.rdvservice.serviceFace.ServiceMetierFace;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ServiceMetierImpl {
+public class ServiceMetierImpl implements ServiceMetierFace {
 
     @Autowired
     ServiceRepository serviceRepository;
@@ -26,7 +27,8 @@ public class ServiceMetierImpl {
     /**
      * Créer un nouveau service
      */
-    @Transactional
+    @Transactional(readOnly = true)
+    @Override
     public ServiceResponse creerService(ServiceRequest request) {
         log.debug("Création du service : {}", request.nom());
 
@@ -54,7 +56,9 @@ public class ServiceMetierImpl {
     /**
      * Récupérer un service par son ID
      */
+
     @Transactional(readOnly = true)
+    @Override
     public ServiceResponse getServiceById(Long id) {
         log.debug("Recherche du service avec ID: {}", id);
 
@@ -69,7 +73,9 @@ public class ServiceMetierImpl {
     /**
      * Récupérer tous les services actifs
      */
+
     @Transactional(readOnly = true)
+    @Override
     public List<ServiceResponse> getAllServicesActifs() {
         log.debug("Récupération de tous les services actifs");
 
@@ -83,6 +89,7 @@ public class ServiceMetierImpl {
      * Récupérer tous les services (y compris inactifs, mais non supprimés)
      */
     @Transactional(readOnly = true)
+    @Override
     public List<ServiceResponse> getAllServices() {
         log.debug("Récupération de tous les services");
 
@@ -98,7 +105,8 @@ public class ServiceMetierImpl {
     /**
      * Mettre à jour un service
      */
-    @Transactional
+    @Transactional(readOnly = true)
+    @Override
     public ServiceResponse updateService(Long id, ServiceRequest request) {
         log.debug("Mise à jour du service avec ID: {}", id);
 
@@ -131,7 +139,8 @@ public class ServiceMetierImpl {
     /**
      * Supprimer un service (soft delete)
      */
-    @Transactional
+    @Transactional(readOnly = true)
+    @Override
     public void supprimerService(Long id) {
         log.debug("Suppression soft du service ID: {}", id);
 
@@ -148,7 +157,8 @@ public class ServiceMetierImpl {
     /**
      * Activer/désactiver un service
      */
-    @Transactional
+    @Transactional(readOnly = true)
+    @Override
     public ServiceResponse activerService(Long id, boolean actif) {
         log.debug("{} du service ID: {}", actif ? "Activation" : "Désactivation", id);
 
@@ -168,6 +178,7 @@ public class ServiceMetierImpl {
      * Vérifier si un service existe
      */
     @Transactional(readOnly = true)
+    @Override
     public boolean existsById(Long id) {
         return serviceRepository.findByIdAndIsDeletedFalse(id).isPresent();
     }
