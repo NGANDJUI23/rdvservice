@@ -1,0 +1,23 @@
+services:
+  rdv-service:
+    # Au lieu de build: ., on utilise l'image depuis ECR
+    image: ${ECR_REGISTRY}/rdvservice:${IMAGE_TAG:-latest}
+    container_name: rdv-service
+    restart: always
+    ports:
+      - "8081:8081"  # Port 8081 sur l'hôte vers 8081 dans le conteneur
+    environment:
+      - SERVER_PORT=8081
+      - SPRING_DATASOURCE_URL=${DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+      - TZ=Europe/Paris
+  rdv-db:
+    image: 'postgres:16'
+    environment:
+      - 'POSTGRES_DB=rdv-db'
+      - 'POSTGRES_PASSWORD=pkfrc'
+      - 'POSTGRES_USER=ivan'
+    ports:
+      - '5432:5432'

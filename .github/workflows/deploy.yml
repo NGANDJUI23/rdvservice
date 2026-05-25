@@ -6,7 +6,7 @@ on:
   workflow_dispatch:  # Permet déclenchement manuel
 
 env:
-  COMPOSE_FILE: compose.yaml
+  COMPOSE_FILE: compose-prod.yml
   ECR_REPOSITORY: rdv/rdvservice
   IMAGE_TAG: latest
 
