@@ -1,15 +1,15 @@
 services:
-  rdvservice:
-    build: .
-    ports:
-      - "8081:8081"
-    environment:
-      - DB_URL=jdbc:postgresql://rdv-db:5432/rdv-db
-      - DB_USERNAME=ivan
-      - DB_PASSWORD=pkfrc
-    depends_on:
-      - rdv-db
-    restart: always
+#  rdvservice:
+#    build: .
+#    ports:
+#      - "8081:8081"
+#    environment:
+#      - DB_URL=jdbc:postgresql://rdv-db:5432/rdv-db
+#      - DB_USERNAME=ivan
+#      - DB_PASSWORD=pkfrc
+#    depends_on:
+#      - rdv-db
+#    restart: always
   rdv-db:
     image: 'postgres:16'
     environment:
