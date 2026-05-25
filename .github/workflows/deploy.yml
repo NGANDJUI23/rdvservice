@@ -1,0 +1,93 @@
+name: Deploy RDV SERVICE
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Permet déclenchement manuel
+
+env:
+  COMPOSE_FILE: compose.yml
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: unnecessary
+
+      - name: Create Docker Network
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
+#            docker network create web || true
+#            cp ~/rdvservice/.env ~/
+            rm -r ~/rdvservice
+            mkdir ~/rdvservice
+           # cp ~/.env ~/rdvservice/
+          "
+
+      - name: Copy Docker Compose & Configs
+        run: |
+          
+          scp -o StrictHostKeyChecking=no ${COMPOSE_FILE} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/rdvservice/
+
+
+      - name: Push image on AWS ECR
+        run: |
+          mvn clean package -DskipTests
+          # Configurations AWS
+            aws configure set aws_access_key_id ${{secrets.AWS_ACCESS_KEY_ID}} 
+            aws configure set aws_secret_access_key ${{secrets.AWS_SECRET_ACCESS_KEY}}
+            aws configure set default.region ${{secrets.AWS_DEFAULT_REGION}}
+          
+            # Connexion à ECR
+            aws ecr get-login-password --region ${{secrets.AWS_DEFAULT_REGION}} | docker login --username AWS --password-stdin ${{secrets.ECR_REGISTRY}}
+          
+            # Liste des images locales à traiter
+          
+            # Extraction du nom du repo (ex: gitea/gitea -> gitea) et du tag
+            repo_name=rdvservice
+            tag=latest
+        
+            echo "Traitement du repo_name: \$repo_name, tag: \$tag"
+        
+            # 1. Vérifier si le dépôt existe, sinon le créer
+            if ! aws ecr describe-repositories --repository-names \$repo_name > /dev/null 2>&1; then
+                echo \"Création du dépôt ECR: \$repo_name\"
+                aws ecr create-repository --repository-name \$repo_name
+            fi
+            # 2. Préparation du nom pour ECR
+            target_image=\"${{secrets.ECR_REGISTRY}}/\$repo_name:\$tag\"
+        
+            # 3. Tagging et Push
+            docker tag \$image_full \$target_image
+            docker push \$target_image
+          "
+      - name: Deploy Stack
+        run: |
+
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
+            cd ~/rdvservice
+
+            # Stop & remove ancien stack
+            docker compose down || true
+
+            # Deploy nouveau stack
+            docker compose up -d
+
+            # Logs pour vérification
+            docker ps
+          "
+
+      - name: Health Check
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
+            docker ps || exit 1
+            echo '✅ Déploiement réussi dans AWS !'
+          "
