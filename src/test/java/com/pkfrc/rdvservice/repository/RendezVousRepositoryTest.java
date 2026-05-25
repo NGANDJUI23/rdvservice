@@ -6,6 +6,7 @@ import com.pkfrc.rdvservice.entity.Services;
 import com.pkfrc.rdvservice.entity.Utilisateur;
 import com.pkfrc.rdvservice.enumeration.NomService;
 import com.pkfrc.rdvservice.enumeration.Role;
+import com.pkfrc.rdvservice.enumeration.StatutRDV;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,7 @@ void setUp() {
             .responsable(responsable)
             .client(client)
             .isDeleted(false)
+            .statut(StatutRDV.PLANIFIE)
             .version(0L)
             .build();
 
@@ -98,6 +100,7 @@ void setUp() {
                 .service(service)
                 .responsable(responsable)
                 .client(client)
+                .statut(StatutRDV.PLANIFIE)
                 .isDeleted(false)
                 .version(0L)
                 .build();

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pkfrc.rdvservice.dto.RendezVousRequest;
 import com.pkfrc.rdvservice.dto.RendezVousResponse;
+import com.pkfrc.rdvservice.enumeration.StatutRDV;
 import com.pkfrc.rdvservice.exception.BusinessException;
 import com.pkfrc.rdvservice.serviceImpl.RdvServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +51,8 @@ class RendezVousApiTest {
                 LocalDateTime.now().plusDays(3),
                 "Consultation médicale",
                 1L,
-                2L
+                2L,
+                StatutRDV.PLANIFIE
         );
 
         rendezVousResponse = new RendezVousResponse(
@@ -60,7 +62,8 @@ class RendezVousApiTest {
                 2L,
                 LocalDateTime.now().plusDays(3),
                 "Consultation médicale",
-                false
+                false,
+                StatutRDV.PLANIFIE
         );
 
         rendezVousResponse2 = new RendezVousResponse(
@@ -70,7 +73,8 @@ class RendezVousApiTest {
                 2L,
                 LocalDateTime.now().plusDays(4),
                 "Consultation de suivi",
-                false
+                false,
+                StatutRDV.PLANIFIE
         );
     }
 
@@ -97,7 +101,8 @@ class RendezVousApiTest {
                 LocalDateTime.now().plusDays(1),
                 "",
                 null,
-                null
+                null,
+                StatutRDV.PLANIFIE
         );
 
         mockMvc.perform(post("/api/rendez-vous")

@@ -8,6 +8,7 @@ import com.pkfrc.rdvservice.entity.Services;
 import com.pkfrc.rdvservice.entity.Utilisateur;
 import com.pkfrc.rdvservice.enumeration.NomService;
 import com.pkfrc.rdvservice.enumeration.Role;
+import com.pkfrc.rdvservice.enumeration.StatutRDV;
 import com.pkfrc.rdvservice.exception.BusinessException;
 import com.pkfrc.rdvservice.repository.RendezVousRepository;
 import com.pkfrc.rdvservice.repository.ServiceRepository;
@@ -83,7 +84,8 @@ class RdvServiceImplTest {
                 LocalDateTime.now().plusDays(3), // dateRDV
                 "Consultation médicale", // motifRdv
                 1L,  // refService
-                2L   // refResponsable
+                2L,   // refResponsable
+                StatutRDV.PLANIFIE
         );
 
         rendezVous = RendezVous.builder()
@@ -126,7 +128,8 @@ class RdvServiceImplTest {
                 LocalDateTime.now().plusDays(1),
                 "Consultation",
                 1L,
-                2L
+                2L,
+                StatutRDV.PLANIFIE
         );
 
         assertThatThrownBy(() -> rdvService.creerRendezVous(rendezVousRequest))
