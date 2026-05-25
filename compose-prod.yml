@@ -1,7 +1,7 @@
 services:
   rdv-service:
     # Au lieu de build: ., on utilise l'image depuis ECR
-    image: ${ECR_REGISTRY}/rdvservice:${IMAGE_TAG:-latest}
+    image: ${ECR_REGISTRY}/rdv/rdvservice:${IMAGE_TAG:-latest}
     container_name: rdv-service
     restart: always
     ports:
