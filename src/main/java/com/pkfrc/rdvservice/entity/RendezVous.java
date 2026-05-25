@@ -1,5 +1,6 @@
 package com.pkfrc.rdvservice.entity;
 
+import com.pkfrc.rdvservice.enumeration.StatutRDV;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @Getter
+@Setter
 @SuperBuilder
 public class RendezVous extends Abstract {
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,6 +34,9 @@ public class RendezVous extends Abstract {
     @Column(name = "motif_rdv", nullable = false)
     private String motifRdv;
 
+    @Column(name = "statut", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private StatutRDV statut;
 
     @Version
     private long version;

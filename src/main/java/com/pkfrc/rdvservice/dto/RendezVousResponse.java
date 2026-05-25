@@ -1,6 +1,8 @@
 package com.pkfrc.rdvservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.pkfrc.rdvservice.enumeration.StatutRDV;
+
 import java.time.LocalDateTime;
 
 public record RendezVousResponse(
@@ -23,5 +25,8 @@ public record RendezVousResponse(
         String motifRdv,
 
         @JsonProperty("isDeleted")
-        Boolean isDeleted
+        Boolean isDeleted,
+
+        @JsonProperty("statut")
+        StatutRDV statut
 ) {}

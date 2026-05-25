@@ -2,6 +2,7 @@ package com.pkfrc.rdvservice.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.pkfrc.rdvservice.enumeration.StatutRDV;
 import com.pkfrc.rdvservice.util.DateValidator;
 import jakarta.validation.constraints.*;
 
@@ -27,6 +28,10 @@ public record RendezVousRequest(
 
         @NotNull(message = "La référence du responsable est requise")
         @JsonProperty("refResponsable")
-        Long refResponsable
+        Long refResponsable,
+
+        @NotNull(message = "Le statut du rendez-vous est requise")
+        @JsonProperty("statut")
+        StatutRDV statut
 ) {
 }

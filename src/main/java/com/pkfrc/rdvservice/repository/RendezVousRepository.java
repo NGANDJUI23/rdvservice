@@ -1,6 +1,7 @@
 package com.pkfrc.rdvservice.repository;
 
 import com.pkfrc.rdvservice.entity.RendezVous;
+import com.pkfrc.rdvservice.enumeration.StatutRDV;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -15,13 +16,7 @@ import java.util.Optional;
 
 @Repository
 public interface RendezVousRepository extends JpaRepository<RendezVous, Long> {
-    /**
-     * Recherche un rendez-vous par service et date avec verrouillage pessimiste
-     * @param serviceId L'ID du service
-     * @param dateTime La date et heure du rendez-vous
-     * @return Optional du rendez-vous trouvé
-     */
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+
     @Query("SELECT r FROM RendezVous r WHERE r.service.id = :serviceId AND r.dateRdv = :dateTime AND r.responsable.id = :responsableId AND r.client.id = :clientId AND r.isDeleted = false")
     Optional<RendezVous> findByServiceIdAndDateRdvWithLockAndClientIdAndResponsableId(
             @Param("serviceId") Long serviceId,
@@ -50,10 +45,6 @@ public interface RendezVousRepository extends JpaRepository<RendezVous, Long> {
     List<RendezVous> findBetweenDates(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
 
-    /**
-     * Recherche un rendez-vous par ID avec verrouillage pessimiste
-     */
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT r FROM RendezVous r WHERE r.id = :id AND r.isDeleted = false")
     Optional<RendezVous> findByIdWithLock(@Param("id") Long id);
 
@@ -70,12 +61,12 @@ public interface RendezVousRepository extends JpaRepository<RendezVous, Long> {
     /**
      * Recherche les rendez-vous par statut
      */
-//    @Query("SELECT r FROM RendezVous r WHERE r.statut = :statut AND r.isDeleted = false")
-//    List<RendezVous> findByStatut(@Param("statut") RendezVous.StatutRDV statut);
+    @Query("SELECT r FROM RendezVous r WHERE r.statut = :statut AND r.isDeleted = false")
+    List<RendezVous> findByStatut(@Param("statut") StatutRDV statut);
 
     /**
      * Recherche les rendez-vous d'un client par statut
      */
-//    @Query("SELECT r FROM RendezVous r WHERE r.client.id = :clientId AND r.statut = :statut AND r.isDeleted = false")
-//    List<RendezVous> findByClientIdAndStatut(@Param("clientId") Long clientId, @Param("statut") RendezVous.StatutRDV statut);
+    @Query("SELECT r FROM RendezVous r WHERE r.client.id = :clientId AND r.statut = :statut AND r.isDeleted = false")
+    List<RendezVous> findByClientIdAndStatut(@Param("clientId") Long clientId, @Param("statut") StatutRDV statut);
 }

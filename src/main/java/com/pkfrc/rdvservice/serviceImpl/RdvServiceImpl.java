@@ -5,15 +5,15 @@ import com.pkfrc.rdvservice.dto.RendezVousResponse;
 import com.pkfrc.rdvservice.entity.RendezVous;
 import com.pkfrc.rdvservice.entity.Services;
 import com.pkfrc.rdvservice.entity.Utilisateur;
+import com.pkfrc.rdvservice.enumeration.StatutRDV;
 import com.pkfrc.rdvservice.exception.BusinessException;
 import com.pkfrc.rdvservice.repository.RendezVousRepository;
 import com.pkfrc.rdvservice.repository.ServiceRepository;
 import com.pkfrc.rdvservice.repository.UtilisateurRepository;
+import com.pkfrc.rdvservice.serviceFace.RdvServiceFace;
 import com.pkfrc.rdvservice.util.DateValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-//import org.springframework.retry.annotation.Backoff;
-//import org.springframework.retry.annotation.Retryable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RdvServiceImpl {
+public class RdvServiceImpl implements RdvServiceFace {
 
     @Autowired
     RendezVousRepository rendezVousRepository;
@@ -38,12 +38,8 @@ public class RdvServiceImpl {
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    @Transactional
-//    @Retryable(
-//            value = {OptimisticLockingFailureException.class},
-//            maxAttempts = 3,
-//            backoff = @Backoff(delay = 100, multiplier = 2)
-//    )
+    @Transactional(readOnly = true)
+    @Override
     public RendezVousResponse creerRendezVous(RendezVousRequest request) {
         log.debug("Création du rendez-vous pour le client: {} au service: {}",
                 request.refClient(), request.refService());
@@ -132,11 +128,6 @@ public class RdvServiceImpl {
 
         log.debug("Aucun conflit trouvé pour le client {}", request.refClient());
 
-        // Vérifier si le service est actif
-//        if (!service.getEstActif()) {
-//            throw new BusinessException("SERVICE_INACTIF",
-//                    "Le service " + service.getNom() + " n'est pas actif");
-//        }
 
         // Vérifier l'existence du responsable
         Optional<Utilisateur> responsable = Optional.of(utilisateurRepository.findByIdAndIsDeletedFalse(request.refResponsable())
@@ -178,6 +169,7 @@ public class RdvServiceImpl {
                 .responsable(responsable.get())
                 .client(client)
                 .isDeleted(false)
+                .statut(StatutRDV.PLANIFIE)
                 .build();
 
         try {
@@ -196,6 +188,7 @@ public class RdvServiceImpl {
     }
 
     @Transactional(readOnly = true)
+    @Override
     public RendezVousResponse getRendezVousById(Long id) {
         log.debug("Recherche du rendez-vous avec ID: {}", id);
 
@@ -210,6 +203,7 @@ public class RdvServiceImpl {
     }
 
     @Transactional
+    @Override
     public void annulerRendezVous(Long id, String motifAnnulation) {
         log.debug("Annulation du rendez-vous ID: {}", id);
 
@@ -222,11 +216,37 @@ public class RdvServiceImpl {
                     "Impossible d'annuler un rendez-vous passé");
         }
 
-//        rendezVous.setStatut(RendezVous.StatutRDV.ANNULE);
-        rendezVous.setIsDeleted(true);
+        rendezVous.setStatut(StatutRDV.ANNULE);
         rendezVousRepository.save(rendezVous);
 
         log.info("Rendez-vous annulé avec succès - ID: {}, Motif: {}", id, motifAnnulation);
+    }
+
+    @Transactional
+    @Override
+    public RendezVousResponse effectuerRendezVous(Long id) {
+        log.debug("Annulation du rendez-vous ID: {}", id);
+
+        RendezVous rendezVous = rendezVousRepository.findActiveById(id)
+                .orElseThrow(() -> new BusinessException("RDV_NOT_FOUND",
+                        "Rendez-vous non trouvé avec l'ID: " + id));
+
+        if (rendezVous.getDateRdv().isBefore(java.time.LocalDateTime.now())) {
+            throw new BusinessException("RDV_PASSE",
+                    "Impossible d'effectuer un rendez-vous passé");
+        }
+
+        if (rendezVous.getStatut().equals(StatutRDV.ANNULE)) {
+            throw new BusinessException("RDV_PASSE",
+                    "Impossible d'effectuer un rendez-vous annule");
+        }
+
+        rendezVous.setStatut(StatutRDV.EFFECTUE);
+        RendezVous rendezVousSaved = rendezVousRepository.save(rendezVous);
+
+
+        log.info("Rendez-vous effectue avec succès - ID: {}", id);
+        return mapToResponse(rendezVousSaved);
     }
 
     private RendezVousResponse mapToResponse(RendezVous rendezVous) {
@@ -237,11 +257,13 @@ public class RdvServiceImpl {
                 rendezVous.getResponsable().getId(), // refResponsable
                 rendezVous.getDateRdv(),                             // dateRDV
                 rendezVous.getMotifRdv(), // motifRdv
-                rendezVous.getIsDeleted()
+                rendezVous.getIsDeleted(),
+                rendezVous.getStatut()
         );
     }
 
     @Transactional(readOnly = true)
+    @Override
     public List<RendezVousResponse> getRendezVousByClient(Long clientId) {
         log.debug("Recherche des rendez-vous du client: {}", clientId);
 
@@ -257,6 +279,7 @@ public class RdvServiceImpl {
     }
 
     @Transactional(readOnly = true)
+    @Override
     public List<RendezVousResponse> getRendezVousByResponsable(Long responsableId) {
         log.debug("Recherche des rendez-vous du responsable: {}", responsableId);
 
@@ -265,6 +288,17 @@ public class RdvServiceImpl {
                         "Responsable non trouvé avec l'ID: " + responsableId));
 
         var rendezVousList = rendezVousRepository.findByResponsableId(responsableId);
+
+        return rendezVousList.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RendezVousResponse> listRentezvous() {
+
+        var rendezVousList = rendezVousRepository.findAll();
 
         return rendezVousList.stream()
                 .map(this::mapToResponse)

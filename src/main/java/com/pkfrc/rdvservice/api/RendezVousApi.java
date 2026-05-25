@@ -39,6 +39,18 @@ public class RendezVousApi extends BaseApi {
     }
 
     /**
+     * Lister tout les rendez-vous
+     * GET /api/rendez-vous
+     */
+    @GetMapping
+    @Operation(summary = "Lister tous les rendez-vous", description = "liste de tout les rendez-vous")
+    public ResponseEntity<List<RendezVousResponse>> allRendezVous() {
+        log.info("Requête pour lister tout les rendez-vous ");
+        List<RendezVousResponse> responses = rendezVousService.listRentezvous();
+        return ResponseEntity.status(HttpStatus.CREATED).body(responses);
+    }
+
+    /**
      * Récupérer un rendez-vous par son ID
      * GET /api/rendez-vous/{id}
      */
@@ -94,26 +106,17 @@ public class RendezVousApi extends BaseApi {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Confirmer un rendez-vous
-     * PATCH /api/rendez-vous/{id}/confirmer
-     */
-//    @PatchMapping("/{id}/confirmer")
-//    @Operation(summary = "Confirmer un rendez-vous", description = "Confirme un rendez-vous planifié")
-//    public ResponseEntity<RendezVousResponse> confirmerRendezVous(@PathVariable Long id) {
-//        log.info("Requête de confirmation du rendez-vous ID: {}", id);
-//        RendezVousResponse response = rendezVousService.confirmerRendezVous(id);
-//        return ResponseEntity.ok(response);
-//    }
+
+
 
     /**
      * Marquer un rendez-vous comme effectué
      * PATCH /api/rendez-vous/{id}/effectuer
      */
-//    @PatchMapping("/{id}/effectuer")
-//    public ResponseEntity<RendezVousResponse> effectuerRendezVous(@PathVariable Long id) {
-//        log.info("Requête pour marquer le rendez-vous ID: {} comme effectué", id);
-//        RendezVousResponse response = rendezVousService.effectuerRendezVous(id);
-//        return ResponseEntity.ok(response);
-//    }
+    @PatchMapping("/{id}/effectuer")
+    public ResponseEntity<RendezVousResponse> effectuerRendezVous(@PathVariable Long id) {
+        log.info("Requête pour marquer le rendez-vous ID: {} comme effectué", id);
+        RendezVousResponse response = rendezVousService.effectuerRendezVous(id);
+        return ResponseEntity.ok(response);
+    }
 }
