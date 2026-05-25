@@ -30,7 +30,7 @@ public record RendezVousRequest(
         @JsonProperty("refResponsable")
         Long refResponsable,
 
-        @NotNull(message = "Le statut du rendez-vous est requise")
+//        @NotNull(message = "Le statut du rendez-vous est requise")
         @JsonProperty("statut")
         StatutRDV statut
 ) {
