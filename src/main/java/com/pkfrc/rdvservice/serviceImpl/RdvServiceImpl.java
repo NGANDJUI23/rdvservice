@@ -38,7 +38,7 @@ public class RdvServiceImpl implements RdvServiceFace {
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    @Transactional(readOnly = true)
+    @Transactional
     @Override
     public RendezVousResponse creerRendezVous(RendezVousRequest request) {
         log.debug("Création du rendez-vous pour le client: {} au service: {}",
