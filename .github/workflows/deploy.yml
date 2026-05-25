@@ -7,14 +7,52 @@ on:
 
 env:
   COMPOSE_FILE: compose.yml
+  ECR_REPOSITORY: rdvservice
+  IMAGE_TAG: latest
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        run: |
+          # Construire l'image Docker
+          docker build -t ${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
+          docker tag ${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} ${{ secrets.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          docker tag ${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} ${{ secrets.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Push image to Amazon ECR
+        run: |
+          # Vérifier si le repository existe, sinon le créer
+          aws ecr describe-repositories --repository-names ${{ env.ECR_REPOSITORY }} || aws ecr create-repository --repository-name ${{ env.ECR_REPOSITORY }}
+          
+          # Push les images
+          docker push ${{ secrets.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          docker push ${{ secrets.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
 
       - name: Create SSH Key
         uses: shimataro/ssh-key-action@v2
@@ -22,72 +60,77 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: unnecessary
 
-      - name: Create Docker Network
+      - name: Copy Docker Compose to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
-#            docker network create web || true
-#            cp ~/rdvservice/.env ~/
-            rm -r ~/rdvservice
-            mkdir ~/rdvservice
-           # cp ~/.env ~/rdvservice/
+          scp ${{ env.COMPOSE_FILE }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/rdvservice/compose.yml
+
+      - name: Create .env file on EC2
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
+            mkdir -p ~/rdvservice
+            cat > ~/rdvservice/.env << EOF
+            ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
+            ECR_REPOSITORY=${{ env.ECR_REPOSITORY }}
+            IMAGE_TAG=${{ env.IMAGE_TAG }}
+            DB_URL=${{ secrets.DB_URL }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            SPRING_PROFILES_ACTIVE=prod
+            EOF
           "
 
-      - name: Copy Docker Compose & Configs
+      - name: Deploy on EC2
         run: |
-          
-          scp -o StrictHostKeyChecking=no ${COMPOSE_FILE} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/rdvservice/
-
-
-      - name: Push image on AWS ECR
-        run: |
-          mvn clean package -DskipTests
-          # Configurations AWS
-            aws configure set aws_access_key_id ${{secrets.AWS_ACCESS_KEY_ID}} 
-            aws configure set aws_secret_access_key ${{secrets.AWS_SECRET_ACCESS_KEY}}
-            aws configure set default.region ${{secrets.AWS_DEFAULT_REGION}}
-          
-            # Connexion à ECR
-            aws ecr get-login-password --region ${{secrets.AWS_DEFAULT_REGION}} | docker login --username AWS --password-stdin ${{secrets.ECR_REGISTRY}}
-          
-            # Liste des images locales à traiter
-          
-            # Extraction du nom du repo (ex: gitea/gitea -> gitea) et du tag
-            repo_name=rdvservice
-            tag=latest
-        
-            echo "Traitement du repo_name: \$repo_name, tag: \$tag"
-        
-            # 1. Vérifier si le dépôt existe, sinon le créer
-            if ! aws ecr describe-repositories --repository-names \$repo_name > /dev/null 2>&1; then
-                echo \"Création du dépôt ECR: \$repo_name\"
-                aws ecr create-repository --repository-name \$repo_name
-            fi
-            # 2. Préparation du nom pour ECR
-            target_image=\"${{secrets.ECR_REGISTRY}}/\$repo_name:\$tag\"
-        
-            # 3. Tagging et Push
-            docker tag \$image_full \$target_image
-            docker push \$target_image
-          "
-      - name: Deploy Stack
-        run: |
-
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
             cd ~/rdvservice
-
-            # Stop & remove ancien stack
-            docker compose down || true
-
-            # Deploy nouveau stack
-            docker compose up -d
-
-            # Logs pour vérification
-            docker ps
+          
+            # Login to ECR
+            aws ecr get-login-password --region ${{ secrets.AWS_DEFAULT_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+          
+            # Pull latest images
+            docker compose -f compose.yml pull
+          
+            # Stop and remove old containers
+            docker compose -f compose.yml down || true
+          
+            # Remove old images (optional)
+            docker system prune -f
+          
+            # Start new stack
+            docker compose -f compose.yml up -d
+          
+            # Check if containers are running
+            sleep 10
+            docker compose -f compose.yml ps
           "
 
       - name: Health Check
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
-            docker ps || exit 1
-            echo '✅ Déploiement réussi dans AWS !'
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
+            cd ~/rdvservice
+          
+            # Check container status
+            if docker compose -f compose.yml ps | grep -q 'Up'; then
+              echo '✅ Docker containers are running'
+              docker compose -f compose.yml ps
+          
+              # Test API health endpoint
+              sleep 5
+            else
+              echo '❌ Containers are not running properly'
+              docker compose -f compose.yml logs
+              exit 1
+            fi
+          
+            echo '🎉 Déploiement réussi sur EC2!'
+          "
+
+      - name: Cleanup old images on EC2
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "
+            # Remove unused Docker images
+            docker image prune -a -f --filter 'until=24h'
+          
+            # Show disk usage
+            docker system df
           "
