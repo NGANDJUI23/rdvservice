@@ -2,7 +2,7 @@ name: Deploy RDV SERVICE
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   workflow_dispatch:  # Permet déclenchement manuel
 
 env:
