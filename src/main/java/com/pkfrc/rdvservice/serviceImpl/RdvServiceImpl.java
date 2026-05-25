@@ -241,6 +241,11 @@ public class RdvServiceImpl implements RdvServiceFace {
                     "Impossible d'effectuer un rendez-vous annule");
         }
 
+        if (rendezVous.getStatut().equals(StatutRDV.EFFECTUE)) {
+            throw new BusinessException("RDV_PASSE",
+                    "Impossible d'effectuer un rendez-vous deja effectuer");
+        }
+
         rendezVous.setStatut(StatutRDV.EFFECTUE);
         RendezVous rendezVousSaved = rendezVousRepository.save(rendezVous);
 

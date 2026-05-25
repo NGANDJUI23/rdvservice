@@ -114,6 +114,7 @@ public class RendezVousApi extends BaseApi {
      * PATCH /api/rendez-vous/{id}/effectuer
      */
     @PatchMapping("/{id}/effectuer")
+    @Operation(summary = "Effectué un rendez-vous", description = "Effectué un rendez-vous existant")
     public ResponseEntity<RendezVousResponse> effectuerRendezVous(@PathVariable Long id) {
         log.info("Requête pour marquer le rendez-vous ID: {} comme effectué", id);
         RendezVousResponse response = rendezVousService.effectuerRendezVous(id);

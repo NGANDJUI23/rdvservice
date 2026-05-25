@@ -3,6 +3,7 @@ package com.pkfrc.rdvservice.api;
 import com.pkfrc.rdvservice.dto.ServiceRequest;
 import com.pkfrc.rdvservice.dto.ServiceResponse;
 import com.pkfrc.rdvservice.serviceImpl.ServiceMetierImpl;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class ServicesApi extends BaseApi {
      * POST /api/services
      */
     @PostMapping
+    @Operation(summary = "Créer un nouveau service", description = "Crée un nouveau service dans le système")
     public ResponseEntity<ServiceResponse> createService(@Valid @RequestBody ServiceRequest request) {
         log.info("Requête de création de service: {}", request.nom());
         ServiceResponse response = serviceMetier.creerService(request);
@@ -40,6 +42,7 @@ public class ServicesApi extends BaseApi {
      * GET /api/services/{id}
      */
     @GetMapping("/{id}")
+    @Operation(summary = "recuperer un service", description = "recuperer un service dans le système")
     public ResponseEntity<ServiceResponse> getService(@PathVariable Long id) {
         log.info("Requête de récupération du service avec ID: {}", id);
         ServiceResponse response = serviceMetier.getServiceById(id);
@@ -51,6 +54,7 @@ public class ServicesApi extends BaseApi {
      * GET /api/services
      */
     @GetMapping
+    @Operation(summary = "recuperer tout les services", description = "recuperer tout les services dans le système")
     public ResponseEntity<List<ServiceResponse>> getAllServices() {
         log.info("Requête de récupération de tous les services actifs");
         List<ServiceResponse> responses = serviceMetier.getAllServicesActifs();
@@ -62,6 +66,7 @@ public class ServicesApi extends BaseApi {
      * PUT /api/services/{id}
      */
     @PutMapping("/{id}")
+    @Operation(summary = "Mettre a jour un service par son ID", description = "mettre a jour un service dans le système")
     public ResponseEntity<ServiceResponse> updateService(
             @PathVariable Long id,
             @Valid @RequestBody ServiceRequest request) {
@@ -75,6 +80,7 @@ public class ServicesApi extends BaseApi {
      * DELETE /api/services/{id}
      */
     @DeleteMapping("/{id}")
+    @Operation(summary = "supprimer un service", description = "supprimer un service dans le système")
     public ResponseEntity<Void> supprimerService(@PathVariable Long id) {
         log.info("Requête de suppression du service ID: {}", id);
         serviceMetier.supprimerService(id);
@@ -86,6 +92,7 @@ public class ServicesApi extends BaseApi {
      * PATCH /api/services/{id}/activer?actif=true
      */
     @PatchMapping("/{id}/activer")
+    @Operation(summary = "Activer ou deactiver un service", description = "Activer ou deactiver un service dans le système")
     public ResponseEntity<ServiceResponse> activerService(
             @PathVariable Long id,
             @RequestParam boolean actif) {
