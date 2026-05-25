@@ -7,7 +7,7 @@ on:
 
 env:
   COMPOSE_FILE: compose.yml
-  ECR_REPOSITORY: rdvservice
+  ECR_REPOSITORY: rdv/rdvservice
   IMAGE_TAG: latest
 
 jobs:
