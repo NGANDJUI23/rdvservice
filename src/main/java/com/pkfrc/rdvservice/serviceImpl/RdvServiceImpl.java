@@ -117,7 +117,7 @@ public class RdvServiceImpl implements RdvServiceFace {
 
             if (hasOverlap) {
                 throw new BusinessException("RESPONSABLE_OCCUPE",
-                        String.format("Le responsable n'est pas disponible. Il a déjà un rendez-vous le %s de %s à %s (service: %s, client: %s %s)",
+                        String.format("Le responsable n'est pas disponible. Il a déjà un rendez-vous le %s de %s à %s (service: %s, client: %s)",
                                 existingStart.format(DATE_FORMATTER),
                                 existingStart.format(TIME_FORMATTER),
                                 existingEnd.format(TIME_FORMATTER),
