@@ -13,11 +13,33 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
       - TZ=Europe/Paris
+    depends_on:
+      - rdv-db
+    networks:
+      - rdv-network
+
   rdv-db:
     image: 'postgres:16'
+    container_name: rdv-db
     environment:
       - 'POSTGRES_DB=rdv-db'
       - 'POSTGRES_PASSWORD=pkfrc'
       - 'POSTGRES_USER=ivan'
     ports:
       - '5432:5432'
+    volumes:
+      # Volume nommé pour persister les données
+      - postgres_data:/var/lib/postgresql/data
+      # Optionnel: Scripts d'initialisation
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    restart: always
+    networks:
+      - rdv-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  rdv-network:
+    driver: bridge
